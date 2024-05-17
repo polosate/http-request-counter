@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"simplesurance-test-task/internal/counter"
+	"simplesurance-test-task/internal/limiter"
 )
 
 type Server struct {
@@ -17,7 +18,8 @@ type Server struct {
 
 	logger *slog.Logger
 
-	requestCounter *counter.RequestCounter
+	requestCounter  *counter.RequestCounter
+	parallelLimiter *limiter.ParallelRateLimiter
 }
 
 func New(
@@ -25,6 +27,7 @@ func New(
 	port string,
 	logger *slog.Logger,
 	requestCounter *counter.RequestCounter,
+	parallelLimiter *limiter.ParallelRateLimiter,
 ) (*Server, error) {
 	if addr == `` {
 		addr = `:` + port
@@ -44,13 +47,18 @@ func New(
 			Addr:         addr,
 			WriteTimeout: responseTimeout,
 		},
-		logger:         logger,
-		requestCounter: requestCounter,
+		logger:          logger,
+		requestCounter:  requestCounter,
+		parallelLimiter: parallelLimiter,
 	}
 
 	srv.httpMux.Handle(
 		CounterHandlerPath,
-		srv.withLogRequest(srv.CounterHandler()),
+		srv.withLogRequest(
+			srv.withParallelLimiter(
+				srv.CounterHandler(),
+			),
+		),
 	)
 
 	srv.httpSrv.Handler = srv.httpMux

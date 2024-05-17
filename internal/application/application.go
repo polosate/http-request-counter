@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"simplesurance-test-task/internal/counter"
+	"simplesurance-test-task/internal/limiter"
 	"simplesurance-test-task/internal/storage"
 	"simplesurance-test-task/internal/webserver"
 )
@@ -45,11 +46,14 @@ func (app *Application) Init() (err error) {
 		return err
 	}
 
+	parallelLimiter := limiter.NewParallelRateLimiter(config.MaxParallelRequests)
+
 	if app.webserver, err = webserver.New(
 		``,
 		config.Port,
 		app.logger,
 		requestCounter,
+		parallelLimiter,
 	); err != nil {
 		return err
 	}

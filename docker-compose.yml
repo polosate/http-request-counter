@@ -9,7 +9,8 @@ services:
       - "8080:8080"
     environment:
       - PORT=8080
-      - FILENAME="requests.csv"
+      - COUNTER_FILE="requests.csv"
+      - MAX_PARALLEL_REQUESTS=5
     volumes:
       - counter-data:/app
 
