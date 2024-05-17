@@ -24,8 +24,8 @@ func main() {
 	}
 
 	var wg sync.WaitGroup
-
-	for i := 0; i < 7; i++ {
+	parallelRequests := 7 // maxParallelRequest + 2
+	for i := 0; i < parallelRequests; i++ {
 		wg.Add(1)
 		go func(routineNumber int) {
 			defer wg.Done()
