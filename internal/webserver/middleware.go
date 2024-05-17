@@ -17,12 +17,18 @@ func (s *Server) withLogRequest(next http.Handler) http.Handler {
 
 func (s *Server) withParallelLimiter(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		select {
-		case s.parallelLimiter.Semaphore <- struct{}{}:
-			next.ServeHTTP(w, r.WithContext(r.Context()))
-			<-s.parallelLimiter.Semaphore
-		default:
-			http.Error(w, "Too Many Requests", http.StatusTooManyRequests)
+		limiter := s.limiterManager.GetLimiter(r.URL.Path)
+		if limiter == nil {
+			http.Error(w, "Rate limiter not configured for this path", http.StatusInternalServerError)
+			return
 		}
+
+		if !limiter.Allow() {
+			http.Error(w, "Too Many Requests", http.StatusTooManyRequests)
+			return
+		}
+		defer limiter.Release()
+
+		next.ServeHTTP(w, r)
 	})
 }

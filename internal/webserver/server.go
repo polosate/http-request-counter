@@ -18,8 +18,8 @@ type Server struct {
 
 	logger *slog.Logger
 
-	requestCounter  *counter.RequestCounter
-	parallelLimiter *limiter.ParallelRateLimiter
+	requestCounter *counter.RequestCounter
+	limiterManager *limiter.LimiterManager
 }
 
 func New(
@@ -27,7 +27,7 @@ func New(
 	port string,
 	logger *slog.Logger,
 	requestCounter *counter.RequestCounter,
-	parallelLimiter *limiter.ParallelRateLimiter,
+	limiterManager *limiter.LimiterManager,
 ) (*Server, error) {
 	if addr == `` {
 		addr = `:` + port
@@ -47,9 +47,9 @@ func New(
 			Addr:         addr,
 			WriteTimeout: responseTimeout,
 		},
-		logger:          logger,
-		requestCounter:  requestCounter,
-		parallelLimiter: parallelLimiter,
+		logger:         logger,
+		requestCounter: requestCounter,
+		limiterManager: limiterManager,
 	}
 
 	srv.httpMux.Handle(

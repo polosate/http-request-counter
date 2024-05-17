@@ -46,14 +46,15 @@ func (app *Application) Init() (err error) {
 		return err
 	}
 
-	parallelLimiter := limiter.NewParallelRateLimiter(config.MaxParallelRequests)
+	limiterManager := limiter.NewLimiterManager()
+	limiterManager.AddLimiter("/counter", limiter.NewParallelRateLimiter(config.MaxParallelRequests))
 
 	if app.webserver, err = webserver.New(
 		``,
 		config.Port,
 		app.logger,
 		requestCounter,
-		parallelLimiter,
+		limiterManager,
 	); err != nil {
 		return err
 	}
