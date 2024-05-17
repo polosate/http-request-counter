@@ -12,14 +12,16 @@ import (
 
 func TestWithParallelLimiter(t *testing.T) {
 	maxParallelRequest := 5
-	parallelLimiter := limiter.NewParallelRateLimiter(maxParallelRequest)
+
+	limiterManager := limiter.NewLimiterManager()
+	limiterManager.AddLimiter("/testAPI", limiter.NewParallelRateLimiter(maxParallelRequest))
 
 	srv, err := New(
 		``,
 		``,
 		nil,
 		nil,
-		parallelLimiter,
+		limiterManager,
 	)
 	if err != nil {
 		t.Fatalf("Failed to create server: %v", err)
