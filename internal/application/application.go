@@ -38,6 +38,8 @@ func (app *Application) Init() (err error) {
 	app.ctx = context.Background()
 	app.logger = slog.New(slog.NewJSONHandler(os.Stdout, nil))
 
+	app.logger.Info(`initializing application...`)
+
 	config := NewConfig()
 	config.LoadFromEnv()
 
